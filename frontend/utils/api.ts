@@ -15,8 +15,8 @@ const getBackendUrl = () => {
 };
 
 
-const BACKEND_URL = getBackendUrl();
-const API_URL = `${BACKEND_URL}/api`;
+export const BACKEND_URL = getBackendUrl();
+export const API_URL = `${BACKEND_URL}/api`;
 
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
