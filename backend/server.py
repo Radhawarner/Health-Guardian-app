@@ -52,6 +52,12 @@ security = HTTPBearer()
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Health check endpoint for wake-up pings
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 # ==================== Models ====================
 
 class UserCreate(BaseModel):

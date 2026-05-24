@@ -6,7 +6,7 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiCall } from '../utils/api';
+import { apiCall, warmUpBackend } from '../utils/api';
 import '../utils/i18n';
 
 // Configure notification behavior for when the app is foregrounded
@@ -29,6 +29,9 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && 'serviceWorker' in
       .catch((err) => console.warn('Service Worker registration failed:', err));
   });
 }
+
+// Warm up Render backend as early as possible to avoid cold-start on mobile
+warmUpBackend();
 
 // Global variable to hold the deferred install prompt
 let deferredPrompt: any = null;
