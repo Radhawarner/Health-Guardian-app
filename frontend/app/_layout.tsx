@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiCall, warmUpBackend } from '../utils/api';
+import Toast from 'react-native-toast-message';
 import '../utils/i18n';
 
 // Configure notification behavior for when the app is foregrounded
@@ -214,7 +215,6 @@ function AppNavigator() {
   );
 }
 
-import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (

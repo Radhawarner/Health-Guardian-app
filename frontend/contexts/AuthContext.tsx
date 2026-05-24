@@ -55,58 +55,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Login failed');
+  // Fetch with 60s timeout and 2 retries to handle Render cold starts on mobile
+  const fetchWithRetry = async (url: string, options: RequestInit, retries = 2): Promise<any> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 60000);
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Request failed');
+        }
+        return await response.json();
+      } catch (error: any) {
+        clearTimeout(timer);
+        if (attempt === retries) {
+          if (error.name === 'AbortError') {
+            throw new Error('Request timed out. The server may be waking up — please try again in a moment.');
+          }
+          throw new Error(error.message || 'Network error');
+        }
+        await new Promise(res => setTimeout(res, 2000));
       }
-
-      const data = await response.json();
-      
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      
-      setToken(data.token);
-      setUser(data.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
     }
   };
 
+  const login = async (email: string, password: string) => {
+    const data = await fetchWithRetry(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    await AsyncStorage.setItem('token', data.token);
+    await AsyncStorage.setItem('user', JSON.stringify(data.user));
+    setToken(data.token);
+    setUser(data.user);
+  };
+
   const register = async (email: string, password: string, name: string, age: number, gender: string) => {
-    try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, name, age, gender }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Registration failed');
-      }
-
-      const data = await response.json();
-      
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      
-      setToken(data.token);
-      setUser(data.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
-    }
+    const data = await fetchWithRetry(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name, age, gender }),
+    });
+    await AsyncStorage.setItem('token', data.token);
+    await AsyncStorage.setItem('user', JSON.stringify(data.user));
+    setToken(data.token);
+    setUser(data.user);
   };
 
   const logout = async () => {
