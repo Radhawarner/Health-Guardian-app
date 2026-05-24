@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+.metro-cache/
+dist/
+build/
+android/
+ios/
+*.log
+.env
