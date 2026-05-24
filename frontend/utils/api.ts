@@ -1,8 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
-import { Platform } from 'react-native';
-
 const getBackendUrl = () => {
   const envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
   if (envUrl) {
@@ -14,18 +12,16 @@ const getBackendUrl = () => {
   return ''; // Relative path for single-domain same-origin deployments
 };
 
-
 export const BACKEND_URL = getBackendUrl();
 export const API_URL = `${BACKEND_URL}/api`;
-
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   try {
     const token = await AsyncStorage.getItem('token');
     
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(options.headers || {}),
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (token) {
